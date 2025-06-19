@@ -1,0 +1,51 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>TibiaSocial</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="author" content="Rocky J LaRo">
+	<meta name="description" content="A statistics focused TibiaSocial fansite.">
+	<meta name='keywords' content='tibia, social, fun, gaming, mmorpg, statistics, online, players, history'>
+    <script src="js/javascript.js"></script>
+    <script src="js/jquery-3.6.3.js"></script>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="css/datatables.min.css" />
+    <script type="text/javascript" src="js/datatables.min.js"></script>
+	<link href="css/blogPostStyle.css" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+<div id="mainwrapper">
+  <header> 
+    <a href="https://www.tibiasocial.com" title="Link"><div id="logo">
+      <img src="images/logo.png" alt="Tibia Social Logo">
+      <b>TibiaSocial</b></div></a>
+    <nav><a href="#" title="Link">Worlds</a> <a href="#" title="Link">Players&nbsp;</a> <a href="#" title="Link">Statistics&nbsp;</a> Rashid:   <div id="rashid"></div></nav>
+  </header>
+  <div id="content">
+    <section id="mainContent">
+      <h1><div id="total_online"></div></h1>
+    <table id="online" class="table table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th scope="col" class="sortable" data-sort="name">World</th>
+                <th scope="col" class="sortable" data-sort="players_online">Online</th>
+                <th scope="col" class="sortable" data-sort="location">Location</th>
+                <th scope="col" class="sortable" data-sort="pvp_type">PvP Type</th>
+            </tr>
+        </thead>
+        <tbody class="table table-hover table-dark" id="worlds-table-body">
+            </tbody>
+    </table>
+    </section>
+    <footer><center>
+<a href="https://tibiasocial.com">TibiaSocial.com</a> © 2023. All rights reserved.
+Tibia and TibiaME are trademarks of <a href="https://cipsoft.com/">CipSoft GmbH</a>.
+    </center></footer>
+  </div>
+</div>
+	    <script src="js/bootstrap.bundle.js"></script>
+</body>
+</html>
