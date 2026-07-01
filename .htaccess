@@ -1,51 +1,219 @@
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteBase /
-    
-    # Redirect www to non-www
-    RewriteCond %{HTTP_HOST} ^www\.example\.com [NC]
-    RewriteRule ^(.*)$ http://example.com/$1 [L,R=301]
-    
-    # Remove .html extension
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteCond %{REQUEST_FILENAME}\.html -f
-    RewriteRule ^([^/]+)/?$ $1.html [L]
-</IfModule>
+###############################################################################
+# .htaccess
+# Optimized for Apache 2.4+
+###############################################################################
 
-# Set default files
+# ---------------------------------------------------------------------------
+# Disable directory browsing
+# ---------------------------------------------------------------------------
+Options -Indexes
+
+# ---------------------------------------------------------------------------
+# Default document
+# ---------------------------------------------------------------------------
 DirectoryIndex index.html index.php
 
-# Enable gzip compression
-<IfModule mod_deflate.c>
-    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/x-javascript application/json
+# ---------------------------------------------------------------------------
+# Default charset
+# ---------------------------------------------------------------------------
+AddDefaultCharset UTF-8
+
+###############################################################################
+# Rewrite Rules
+###############################################################################
+
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+
+# ---------------------------------------------------------------------------
+# Force HTTPS
+# (Comment out if your site does not have SSL)
+# ---------------------------------------------------------------------------
+RewriteCond %{HTTPS} !=on
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# ---------------------------------------------------------------------------
+# Redirect www -> non-www
+# Replace example.com with your domain
+# ---------------------------------------------------------------------------
+RewriteCond %{HTTP_HOST} ^www\.example\.com$ [NC]
+RewriteRule ^ https://example.com%{REQUEST_URI} [L,R=301]
+
+# ---------------------------------------------------------------------------
+# Redirect /index.html -> /
+# ---------------------------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
+RewriteRule ^index\.html$ / [R=301,L]
+
+# ---------------------------------------------------------------------------
+# Redirect .html URLs to clean URLs
+# Example:
+# /about.html -> /about
+# ---------------------------------------------------------------------------
+RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
+RewriteRule ^ %1 [R=301,L]
+
+# ---------------------------------------------------------------------------
+# Internally rewrite clean URLs to .html
+# Example:
+# /about -> /about.html
+# ---------------------------------------------------------------------------
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME}.html -f
+RewriteRule ^(.+?)/?$ $1.html [L]
+
 </IfModule>
 
-# Set custom error pages
+###############################################################################
+# Compression
+###############################################################################
+
+<IfModule mod_deflate.c>
+
+AddOutputFilterByType DEFLATE text/html
+AddOutputFilterByType DEFLATE text/plain
+AddOutputFilterByType DEFLATE text/xml
+AddOutputFilterByType DEFLATE text/css
+AddOutputFilterByType DEFLATE application/javascript
+AddOutputFilterByType DEFLATE application/x-javascript
+AddOutputFilterByType DEFLATE text/javascript
+AddOutputFilterByType DEFLATE application/json
+AddOutputFilterByType DEFLATE application/xml
+AddOutputFilterByType DEFLATE application/rss+xml
+AddOutputFilterByType DEFLATE image/svg+xml
+AddOutputFilterByType DEFLATE font/ttf
+AddOutputFilterByType DEFLATE font/otf
+AddOutputFilterByType DEFLATE application/font-woff
+AddOutputFilterByType DEFLATE application/font-woff2
+
+</IfModule>
+
+###############################################################################
+# Browser Caching
+###############################################################################
+
+<IfModule mod_expires.c>
+
+ExpiresActive On
+
+# Images
+ExpiresByType image/jpeg "access plus 1 year"
+ExpiresByType image/png "access plus 1 year"
+ExpiresByType image/gif "access plus 1 year"
+ExpiresByType image/webp "access plus 1 year"
+ExpiresByType image/avif "access plus 1 year"
+ExpiresByType image/svg+xml "access plus 1 year"
+ExpiresByType image/x-icon "access plus 1 year"
+
+# Fonts
+ExpiresByType font/woff "access plus 1 year"
+ExpiresByType font/woff2 "access plus 1 year"
+ExpiresByType application/font-woff "access plus 1 year"
+
+# CSS & JavaScript
+ExpiresByType text/css "access plus 1 month"
+ExpiresByType application/javascript "access plus 1 month"
+ExpiresByType text/javascript "access plus 1 month"
+
+# HTML
+ExpiresByType text/html "access plus 1 hour"
+
+# PDFs
+ExpiresByType application/pdf "access plus 1 month"
+
+ExpiresDefault "access plus 1 week"
+
+</IfModule>
+
+###############################################################################
+# Security Headers
+###############################################################################
+
+<IfModule mod_headers.c>
+
+# Prevent MIME sniffing
+Header always set X-Content-Type-Options "nosniff"
+
+# Clickjacking protection
+Header always set X-Frame-Options "SAMEORIGIN"
+
+# XSS Protection (legacy browsers)
+Header always set X-XSS-Protection "1; mode=block"
+
+# Hide referrer information
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+# Permissions Policy
+Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+
+# Remove server signature
+Header unset X-Powered-By
+
+</IfModule>
+
+###############################################################################
+# ETags
+###############################################################################
+
+FileETag None
+
+<IfModule mod_headers.c>
+Header unset ETag
+</IfModule>
+
+###############################################################################
+# Custom Error Pages
+###############################################################################
+
+ErrorDocument 400 /400.html
+ErrorDocument 401 /401.html
+ErrorDocument 403 /403.html
 ErrorDocument 404 /404.html
 ErrorDocument 500 /500.html
+ErrorDocument 502 /500.html
+ErrorDocument 503 /500.html
 
-# Block access to certain files
-<FilesMatch "\.(htaccess|htpasswd|ini|phps|fla|psd|log|sh|inc|bak)$">
-    Order Allow,Deny
-    Deny from all
+###############################################################################
+# Protect Sensitive Files
+###############################################################################
+
+<FilesMatch "\.(htaccess|htpasswd|ini|log|conf|bak|old|orig|save|swp|sql|sqlite|env|git|gitignore|fla|psd|sh|inc)$">
+    Require all denied
 </FilesMatch>
 
-# Deny access based on IP address
-<RequireAll>
-    Require all granted
-    Require not ip 192.168.1.100
-</RequireAll>
+###############################################################################
+# Prevent Access to Hidden Files
+###############################################################################
 
-# Enable caching
-<IfModule mod_expires.c>
-    ExpiresActive On
-    ExpiresByType image/jpeg "access plus 1 year"
-    ExpiresByType image/gif "access plus 1 year"
-    ExpiresByType image/png "access plus 1 year"
-    ExpiresByType text/css "access plus 1 month"
-    ExpiresByType application/pdf "access plus 1 month"
-    ExpiresByType text/x-javascript "access plus 1 month"
-    ExpiresByType application/x-shockwave-flash "access plus 1 month"
-    ExpiresByType image/x-icon "access plus 1 year"
-    ExpiresDefault "access plus 1 week"
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>
+
+###############################################################################
+# Disable TRACE and TRACK
+###############################################################################
+
+RewriteCond %{REQUEST_METHOD} ^(TRACE|TRACK) [NC]
+RewriteRule .* - [F]
+
+###############################################################################
+# Optional Cache-Control Headers
+###############################################################################
+
+<IfModule mod_headers.c>
+
+<FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=2592000, immutable"
+</FilesMatch>
+
+<FilesMatch "\.(jpg|jpeg|png|gif|svg|webp|avif|ico|woff|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>
+
+<FilesMatch "\.(html)$">
+    Header set Cache-Control "no-cache, must-revalidate"
+</FilesMatch>
+
 </IfModule>
